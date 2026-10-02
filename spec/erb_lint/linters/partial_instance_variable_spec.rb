@@ -30,6 +30,16 @@ describe ERBLint::Linters::PartialInstanceVariable do
         ]))
       end
     end
+
+    context "when an instance variable is present in an ERB comment" do
+      let(:file) { "<%#= debug_json @employer.contracts %>" }
+      it { expect(subject).to(eq([])) }
+    end
+
+    context "when an at-rule is present in HTML" do
+      let(:file) { "<style>\n  @font-face { font-family: test; }\n</style>" }
+      it { expect(subject).to(eq([])) }
+    end
   end
 
   private
