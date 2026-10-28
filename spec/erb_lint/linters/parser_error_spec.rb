@@ -65,6 +65,19 @@ describe ERBLint::Linters::ParserErrors do
       it { expect(subject).to(eq([])) }
     end
 
+    context "when multiple less-than symbols are followed by whitespace in HTML text" do
+      let(:file) { "<p>1 < 2 and 3 < 4</p>" }
+      let(:processed_source) { ERBLint::ProcessedSource.new("file.html.erb", file) }
+
+      it "retries each literal symbol without losing the original text or closing tag" do
+        expect(subject).to(eq([]))
+        expect(processed_source.parser.nodes_with_type(:tag).map { |node| BetterHtml::Tree::Tag.from_node(node).name })
+          .to(eq(["p", "p"]))
+        expect(processed_source.parser.nodes_with_type(:text).map(&:loc).map(&:source))
+          .to(include("1 < 2 and 3 < 4"))
+      end
+    end
+
     context "when a text less-than symbol and invalid markup coexist" do
       let(:file) { "<p>< 2 items</p><>" }
       let(:processed_source) { ERBLint::ProcessedSource.new("file.html.erb", file) }
